@@ -9,7 +9,7 @@ fpx-convert is a command-line tool. Given one FlashPix (`.fpx`) image, it:
 
 1. Finds the best (highest-resolution) image data actually stored in the file,
 2. Decodes it, and
-3. Writes out a file a modern web browser can display directly — lossless by default, falling back to lossy only if the lossless file would be unreasonably large.
+3. Writes out a lossless PNG a modern web browser can display directly.
 
 It converts one file at a time and exits. Nothing about it is Lumento-specific — Lumento (a separate Go project, same author) is expected to call it as a subprocess, but any other program in any language could do the same.
 
@@ -36,7 +36,7 @@ Primary references (for whoever implements the byte-level parsing — this spec 
 
 - Reading a single `.fpx` file and selecting its best available resolution
 - Decoding that resolution's tiles into a full pixel image
-- Encoding that image into a browser-displayable format, lossless-first with a lossy fallback (see [Convert stage](#convert-stage))
+- Encoding that image into a lossless, browser-displayable PNG (see [Convert stage](#convert-stage))
 - A CLI with both a file-path mode and a stdin/stdout streaming mode
 
 ### Non-goals (and why)
@@ -46,6 +46,7 @@ Primary references (for whoever implements the byte-level parsing — this spec 
 - **No batch/directory mode.** One file in, one file out, per invocation. A caller that wants to convert a folder loops over it itself.
 - **No writing back to FPX.** One-directional only.
 - **No support for non-JPEG tile compression** (the format also allows uncompressed, single-color, and LZH-compressed tiles). We have no sample exercising these. v1 should detect and clearly error on them rather than guess — see [Error handling](#error-handling).
+- **No size-based lossy fallback.** Originally speced as "lossless unless it blows the size," then dropped after discussion: at the resolutions FlashPix cameras actually shot (~1-2 megapixels), a lossless PNG realistically lands around 1-5MB even in a worst case — trivial for a browser to load or a NAS to store. The cutoff was defensive engineering against a problem the format's own physical limits make very unlikely to occur. Revisit only if a real oversized file actually turns up.
 
 ## Parse stage
 
@@ -61,9 +62,9 @@ One `.fpx` file: either a path argument or bytes piped via stdin.
 4. Walk the selected resolution's tile table (in `Subimage 0000 Header`) and, for each tile: decode its JPEG-compressed bytes (from `Subimage 0000 Data`) using the shared tables, placing decoded pixels at the tile's position in the full image. Tiles at the right/bottom edge may be partial where the image dimensions aren't an exact multiple of the tile size — crop to the real image bounds.
 5. Produce one full-resolution pixel buffer, ready for the convert stage.
 
-### Metadata (open question, not blocking)
+### Metadata
 
-Capture date and camera model are readable from the `SummaryInformation`/`Image Info` property sets (e.g., our sample: `DC210 Zoom (V01.02)`, captured 1997-12-25 15:26:15). Not needed to display the image in a browser. Worth preserving in the output (e.g. as EXIF) since this is an archive of real memories, not just throwaway images — but not decided yet. **Flagging for your call, not deciding silently.**
+Capture date and camera model, read from the `SummaryInformation`/`Image Info` property sets (e.g., our sample: `DC210 Zoom (V01.02)`, captured 1997-12-25 15:26:15), must be preserved in the output as EXIF. Not needed for a browser to render the image, but this is an archive of real memories, not throwaway images, and that context shouldn't be silently dropped just because the display path doesn't need it. Written as a PNG `eXIf` chunk.
 
 ### Error handling
 
@@ -77,36 +78,29 @@ Capture date and camera model are readable from the `SummaryInformation`/`Image 
 
 Always the single "best available" resolution chosen during parsing. v1 does not produce multiple output sizes (e.g. a `srcset` of thumbnails) — that's a plausible future enhancement, not v1 scope.
 
-### Output format decision
+### Output format
 
-1. Always try lossless first: encode the decoded pixels as **PNG**.
-2. If the PNG is under the size budget (default **5 MB**, overridable via `--max-size <bytes>`), that's the output.
-3. Otherwise, fall back to lossy: encode as **JPEG**, at descending quality until it's under budget (or a quality floor is hit — never fail outright just because of size; a lower-quality image beats no image, with a warning printed to stderr).
+Always encode the decoded pixels as lossless **PNG**. No size cutoff, no lossy fallback (see [Non-goals](#non-goals-and-why) for why that was dropped).
 
-**Why PNG + JPEG specifically, not WebP/AVIF:** both have mature, dependency-free (pure-Rust) encoders, which matters a lot given the two-architecture (x86_64 + ARM) build requirement — a pure-Rust dependency cross-compiles with just a target added; anything wrapping a C library (like most performant WebP/AVIF encoders) needs a full C cross-toolchain configured for *each* target, which is real, avoidable pain. Both formats are supported in every browser, not just "modern" ones. JPEG as the fallback is also a natural fit, since the source tiles were already JPEG to begin with. WebP/AVIF are reasonable size-optimization upgrades to revisit later — not needed to ship v1.
-
-### Open questions on this stage (flagging, not deciding silently)
-
-- Is 5 MB the right default `--max-size`? Given real 1990s FlashPix images tend to be under ~2 megapixels, this will rarely trigger in practice — but you know your actual photo set better than I do.
-- Quality search strategy for the JPEG fallback (fixed step-down vs. binary search) — an implementation detail, doesn't block approving this spec.
+**Why PNG, not WebP/AVIF:** PNG has a mature, dependency-free (pure-Rust) encoder, which matters a lot given the two-architecture (x86_64 + ARM) build requirement — a pure-Rust dependency cross-compiles with just a target added; anything wrapping a C library (like most performant WebP/AVIF encoders) needs a full C cross-toolchain configured for *each* target, which is real, avoidable pain. PNG is also supported in every browser, not just "modern" ones. WebP/AVIF are reasonable size-optimization upgrades to revisit later — not needed to ship v1.
 
 ## CLI interface
 
 ### File-path mode
 
 ```
-fpx-convert <input.fpx> <output-base-path> [--max-size <bytes>]
+fpx-convert <input.fpx> <output.png>
 ```
 
-`<output-base-path>` is given **without** an extension — fpx-convert appends `.png` or `.jpg` itself, since which one gets used depends on the size-fallback logic above and shouldn't be predicted by the caller. The final path actually written is printed to stdout.
+Output is always PNG, so the caller gives the exact output path it wants (extension included) — there's no fallback outcome to leave open.
 
 ### Stdin/stdout streaming mode
 
 ```
-fpx-convert --stdin --stdout [--max-size <bytes>]
+fpx-convert --stdin --stdout
 ```
 
-Reads the `.fpx` bytes from stdin, writes the converted image bytes to stdout. Since stdout is reserved for the raw image payload, which format was chosen is reported on **stderr** as a single line (`format=png` or `format=jpeg`) so a calling program can capture it separately without parsing binary output.
+Reads the `.fpx` bytes from stdin, writes the converted PNG bytes to stdout.
 
 ### Exit codes
 
