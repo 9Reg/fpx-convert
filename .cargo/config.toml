@@ -1,0 +1,9 @@
+# Linker mappings for cross-compiling fpx-convert's two required build
+# targets from inside .devcontainer (see .devcontainer/Dockerfile for the
+# matching cross-toolchain packages).
+
+[target.x86_64-unknown-linux-gnu]
+linker = "x86_64-linux-gnu-gcc"
+
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
