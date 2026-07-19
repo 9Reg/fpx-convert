@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 cfb = "0.14"
 jpeg-decoder = "0.3"
+jpeg-encoder = "0.7"
 png = "0.18"
 thiserror = "2"
 

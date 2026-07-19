@@ -85,6 +85,14 @@ pub enum FpxError {
     #[error("failed to encode PNG output: {0}")]
     PngEncode(#[from] png::EncodingError),
 
+    #[error("failed to encode JPEG output: {0}")]
+    JpegEncode(#[from] jpeg_encoder::EncodingError),
+
+    #[error(
+        "image is {width}x{height}, too large to encode as JPEG (JPEG dimensions are limited to 65535x65535)"
+    )]
+    ImageTooLargeForJpeg { width: u32, height: u32 },
+
     #[error("failed to write output: {0}")]
     Io(#[from] std::io::Error),
 }

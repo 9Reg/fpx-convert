@@ -9,7 +9,7 @@ fpx-convert is a command-line tool. Given one FlashPix (`.fpx`) image, it:
 
 1. Finds the best (highest-resolution) image data actually stored in the file,
 2. Decodes it, and
-3. Writes out a lossless PNG a modern web browser can display directly.
+3. Writes it out as a PNG (lossless, the default) or JPEG (lossy, opt-in via `--format`) a modern web browser can display directly.
 
 It converts one file at a time and exits. Nothing about it is Lumento-specific — Lumento (a separate Go project, same author) is expected to call it as a subprocess, but any other program in any language could do the same.
 
@@ -36,7 +36,7 @@ Primary references (for whoever implements the byte-level parsing — this spec 
 
 - Reading a single `.fpx` file and selecting its best available resolution
 - Decoding that resolution's tiles into a full pixel image
-- Encoding that image into a lossless, browser-displayable PNG (see [Convert stage](#convert-stage))
+- Encoding that image as a browser-displayable PNG or JPEG, caller's choice (see [Convert stage](#convert-stage))
 - A CLI with both a file-path mode and a stdin/stdout streaming mode
 
 ### Non-goals (and why)
@@ -80,27 +80,37 @@ Always the single "best available" resolution chosen during parsing. v1 does not
 
 ### Output format
 
-Always encode the decoded pixels as lossless **PNG**. No size cutoff, no lossy fallback (see [Non-goals](#non-goals-and-why) for why that was dropped).
+The caller selects **PNG** (lossless) or **JPEG** (lossy), defaulting to PNG when not specified — see [CLI interface](#cli-interface). No size cutoff, no automatic lossy fallback (see [Non-goals](#non-goals-and-why) for why that was dropped); the caller always gets exactly the format it asked for, or the PNG default if it didn't ask.
 
 **Why PNG, not WebP/AVIF:** PNG has a mature, dependency-free (pure-Rust) encoder, which matters a lot given the two-architecture (x86_64 + ARM) build requirement — a pure-Rust dependency cross-compiles with just a target added; anything wrapping a C library (like most performant WebP/AVIF encoders) needs a full C cross-toolchain configured for *each* target, which is real, avoidable pain. PNG is also supported in every browser, not just "modern" ones. WebP/AVIF are reasonable size-optimization upgrades to revisit later — not needed to ship v1.
 
+**Why JPEG was added:** some callers would rather take the smaller, lossier file (e.g. thumbnails, bandwidth-constrained delivery) than a PNG of a photo that was already through a lossy JPEG encoder in-camera decades ago — the "lossless" PNG guarantee (see [above](#background-whats-actually-inside-a-fpx-file)) was never recovering detail beyond what the camera itself kept. JPEG output uses the same pure-Rust cross-compilation constraint as PNG: a dependency-free Rust encoder, no C toolchain per target.
+
+Camera model and capture date are preserved as EXIF in either format: a PNG `eXIf` chunk for PNG output, a JPEG APP1 `Exif` segment for JPEG output — same underlying TIFF payload, different container.
+
 ## CLI interface
+
+### Output format selection
+
+An optional `--format png|jpeg` flag (default `png`) selects the output encoding, in both file-path and stdin/stdout mode. Unrecognized values are a usage error, not a silent fallback to the default.
 
 ### File-path mode
 
 ```
 fpx-convert <input.fpx> <output.png>
+fpx-convert --format jpeg <input.fpx> <output.jpg>
 ```
 
-Output is always PNG, so the caller gives the exact output path it wants (extension included) — there's no fallback outcome to leave open.
+The caller gives the exact output path it wants (extension included). The output file's *contents* are always encoded per `--format` (PNG unless `--format jpeg` is given) — fpx-convert does not infer format from the output path's extension, so a mismatched extension (e.g. `--format jpeg out.png`) is honored as given, not corrected.
 
 ### Stdin/stdout streaming mode
 
 ```
 fpx-convert --stdin --stdout
+fpx-convert --stdin --stdout --format jpeg
 ```
 
-Reads the `.fpx` bytes from stdin, writes the converted PNG bytes to stdout.
+Reads the `.fpx` bytes from stdin, writes the converted image bytes (PNG unless `--format jpeg` is given) to stdout.
 
 ### Exit codes
 
