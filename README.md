@@ -1,8 +1,9 @@
 # fpx-convert
 
-Converts a FlashPix (`.fpx`) image into a lossless PNG a modern web browser
-can display directly. Camera model and capture date, if present in the
-source file, are preserved in the output as a PNG `eXIf` chunk.
+Converts a FlashPix (`.fpx`) image into a PNG (lossless, the default) or
+JPEG (lossy, opt-in) a modern web browser can display directly. Camera
+model and capture date, if present in the source file, are preserved in
+the output as EXIF (a PNG `eXIf` chunk, or a JPEG APP1 `Exif` segment).
 
 One file in, one file out, per invocation — see
 [specs/0001-fpx-conversion-pipeline.md](specs/0001-fpx-conversion-pipeline.md)
@@ -18,7 +19,9 @@ by anything that can run a binary and read stdin/stdout or a file path.
 
 ```
 fpx-convert <input.fpx> <output.png>
+fpx-convert --format jpeg <input.fpx> <output.jpg>
 fpx-convert --stdin --stdout
+fpx-convert --stdin --stdout --format jpeg
 fpx-convert --help
 ```
 

@@ -20,10 +20,13 @@ Both need to work; don't design around only one.
 
 We write specs before we write code. Specs live in [specs/](specs/) and should describe *behavior and intent* independent of Rust, so they'd still be useful if a non-Rust implementation were ever needed.
 
+**Spec first, then build — every time, no unspec'd features.** Any new or changed behavior (a new CLI flag, a new output format, a new fallback path, anything a caller could observe) gets the relevant spec doc updated *before* the implementation, not after and not skipped. If a request would add behavior with no spec coverage, update the spec as part of that same piece of work rather than letting code and spec drift apart.
+
 ## Git workflow
 
 - Never commit directly to `main`. All work happens on a branch.
-- Claude opens the PR and writes the PR description. Greg merges manually — Claude does not merge.
+- **Every new version/feature gets its own commit, with a detailed commit message** — not just a one-line summary. Explain what changed and why, the same way the rest of this repo's commit history and this file's Notes log do.
+- Greg creates the PR and merges it himself. Claude does not open PRs and does not merge.
 
 ## How to work with Greg on this project
 
@@ -50,3 +53,4 @@ We write specs before we write code. Specs live in [specs/](specs/) and should d
   - OLE property-set streams (`Image Contents`, `Image Info`, `SummaryInformation`) are stored with a leading control character (`U+0005`) in their names that doesn't show up in path-display output. Exact-match stream lookups have to tolerate that prefix.
 - **`test-media/1997.12.25 XMas_Dads_D_4.fpx`** (gitignored, provided by Greg) is a second Kodak DC210 Zoom photo from the same shoot as the spec's reference sample — same 1152×864 resolution, timestamped ~3.5 minutes apart. Used to validate the parser end-to-end (visually and byte-for-byte against hand-decoded property values); not committed, so CI/other contributors need their own sample for full end-to-end testing — the test suite's synthetic CFBF fixtures (`tests/error_paths.rs`, plus unit tests in `propset.rs`/`subimage_header.rs`) cover error paths without needing one.
 - Considered `little_exif` for writing the PNG `eXIf` chunk; its PNG write path (as of 0.6.23) actually writes a `zTXt` chunk regardless of the `as_zTXt_chunk` flag, not a real `eXIf` chunk. Hand-rolled a small TIFF/EXIF writer instead (`src/exif.rs`) — the `png` crate has first-class `eXIf` support via `Info::exif_metadata`, so this ended up simpler than pulling in the dependency anyway.
+- **Added JPEG as an opt-in output format** (`--format png|jpeg`, default `png`) alongside spec 0001's original PNG-only output — spec updated first (per the spec-first rule above), then `src/jpeg_writer.rs` added. Uses the `jpeg-encoder` crate (pure Rust, same no-C-toolchain constraint that drove the PNG encoder choice); its `add_exif_metadata` takes the exact same raw-TIFF payload `src/exif.rs` already builds for the PNG `eXIf` chunk and wraps it in the JPEG APP1 `Exif\0\0` header itself, so no format-specific EXIF-building code was needed. JPEG quality is a fixed internal constant (90), not caller-configurable — wasn't asked for and adding a knob nobody requested would be scope creep.
