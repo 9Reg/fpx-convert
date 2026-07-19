@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repo, and a running record of how Greg and Claude work together on it.
+Guidance for Claude Code when working in this repo, and a running record of how 9Reg and Claude work together on it.
 
 ## Project
 
-fpx-convert converts FPX images into formats usable by modern web browsers. It's written in Rust so it can run efficiently on an Asustor NAS — Rust was a deliberate choice, not a default: Greg wants something others are more likely to pick up and use, not just the fastest path to done.
+fpx-convert converts FPX images into formats usable by modern web browsers. It's written in Rust so it can run efficiently on an Asustor NAS — Rust was a deliberate choice, not a default: 9Reg wants something others are more likely to pick up and use, not just the fastest path to done.
 
 fpx-convert exists to support **Lumento** (same GitHub user, 9Reg, separate repo — written in Go). fpx-convert is a standalone tool, not a Lumento-internal module, so it should be designed to be useful on its own, not just wired to Lumento's specific needs.
 
@@ -24,20 +24,20 @@ We write specs before we write code. Specs live in [specs/](specs/) and should d
 
 ## Git workflow
 
-**Claude is Greg's git helper, not just a commit-maker — Greg approves, Claude manages the mechanics.** Concretely:
+**Claude is 9Reg's git helper, not just a commit-maker — 9Reg approves, Claude manages the mechanics.** Concretely:
 
 - Never commit directly to `main`. All work happens on a branch.
 - **Every new version/feature gets its own commit, with a detailed commit message** — not just a one-line summary. Explain what changed and why, the same way the rest of this repo's commit history and this file's Notes log do.
-- **Claude owns keeping local git state correct and in sync**, so Greg never hits a broken "Sync Changes" in the IDE: before starting new work, fast-forward local `main` to `origin/main` and branch fresh off that — don't build on top of a branch whose content may already be merged. After a PR merges, don't reuse or keep building on that branch; prune it (`git branch -d`, `git remote prune origin`) and start the next piece of work from an up-to-date `main`.
+- **Claude owns keeping local git state correct and in sync**, so 9Reg never hits a broken "Sync Changes" in the IDE: before starting new work, fast-forward local `main` to `origin/main` and branch fresh off that — don't build on top of a branch whose content may already be merged. After a PR merges, don't reuse or keep building on that branch; prune it (`git branch -d`, `git remote prune origin`) and start the next piece of work from an up-to-date `main`.
   - *Why this rule exists:* on 2026-07-19, a feature branch got merged via PR on GitHub (which auto-deletes the head branch on merge) while local git still had it checked out and thought it was tracking a live remote branch. A new commit landed on top of that orphaned branch, and the local `main` was stale too, so the IDE's "Sync Changes" failed outright (`git pull` couldn't find the remote ref anymore). Fixed by fast-forwarding `main` and cherry-picking the new commit onto a fresh branch. Keeping `main` synced and branching fresh avoids this happening again.
-- Once a branch is pushed and ready, Greg creates the PR and merges it himself — Claude does not open PRs and does not merge. Claude's job ends at "pushed, clean, ready for you to open the PR."
+- Once a branch is pushed and ready, 9Reg creates the PR and merges it himself — Claude does not open PRs and does not merge. Claude's job ends at "pushed, clean, ready for you to open the PR."
 
-## How to work with Greg on this project
+## How to work with 9Reg on this project
 
 - **Ask one question at a time.** Stacking multiple questions in one message is annoying. Ask the most important one, wait for the answer, then ask the next if still needed.
-- **Be a partner, not an order-taker.** Greg is relying on Claude's judgment, not just its hands. If a request seems off, say so directly and ask what the underlying goal is — don't silently comply, and don't silently build something different either.
-- **Greg doesn't know Rust.** He chose it deliberately (portability, and the odds that others will use or contribute to it) — not out of prior Rust experience. Explain Rust-specific decisions, idioms, and tradeoffs rather than assuming familiarity. This is a learning project for him as much as a deliverable.
-- **Don't assume domain expertise Greg hasn't claimed** — FPX format quirks, NAS deployment constraints, etc. Ask rather than guess.
+- **Be a partner, not an order-taker.** 9Reg is relying on Claude's judgment, not just its hands. If a request seems off, say so directly and ask what the underlying goal is — don't silently comply, and don't silently build something different either.
+- **9Reg doesn't know Rust.** He chose it deliberately (portability, and the odds that others will use or contribute to it) — not out of prior Rust experience. Explain Rust-specific decisions, idioms, and tradeoffs rather than assuming familiarity. This is a learning project for him as much as a deliverable.
+- **Don't assume domain expertise 9Reg hasn't claimed** — FPX format quirks, NAS deployment constraints, etc. Ask rather than guess.
 
 ## Repo layout
 
@@ -55,6 +55,6 @@ We write specs before we write code. Specs live in [specs/](specs/) and should d
 - **Two things the spec doesn't mention that the real file layout requires:**
   - The actual image data lives one level down, inside a `Data Object Store NNNNNN` storage — not at the CFBF root. The parser finds it by searching for the telltale `Image Contents` stream rather than assuming a fixed path.
   - OLE property-set streams (`Image Contents`, `Image Info`, `SummaryInformation`) are stored with a leading control character (`U+0005`) in their names that doesn't show up in path-display output. Exact-match stream lookups have to tolerate that prefix.
-- **`test-media/1997.12.25 XMas_Dads_D_4.fpx`** (gitignored, provided by Greg) is a second Kodak DC210 Zoom photo from the same shoot as the spec's reference sample — same 1152×864 resolution, timestamped ~3.5 minutes apart. Used to validate the parser end-to-end (visually and byte-for-byte against hand-decoded property values); not committed, so CI/other contributors need their own sample for full end-to-end testing — the test suite's synthetic CFBF fixtures (`tests/error_paths.rs`, plus unit tests in `propset.rs`/`subimage_header.rs`) cover error paths without needing one.
+- **`test-media/1997.12.25 XMas_Dads_D_4.fpx`** (gitignored, provided by 9Reg) is a second Kodak DC210 Zoom photo from the same shoot as the spec's reference sample — same 1152×864 resolution, timestamped ~3.5 minutes apart. Used to validate the parser end-to-end (visually and byte-for-byte against hand-decoded property values); not committed, so CI/other contributors need their own sample for full end-to-end testing — the test suite's synthetic CFBF fixtures (`tests/error_paths.rs`, plus unit tests in `propset.rs`/`subimage_header.rs`) cover error paths without needing one.
 - Considered `little_exif` for writing the PNG `eXIf` chunk; its PNG write path (as of 0.6.23) actually writes a `zTXt` chunk regardless of the `as_zTXt_chunk` flag, not a real `eXIf` chunk. Hand-rolled a small TIFF/EXIF writer instead (`src/exif.rs`) — the `png` crate has first-class `eXIf` support via `Info::exif_metadata`, so this ended up simpler than pulling in the dependency anyway.
 - **Added JPEG as an opt-in output format** (`--format png|jpeg`, default `png`) alongside spec 0001's original PNG-only output — spec updated first (per the spec-first rule above), then `src/jpeg_writer.rs` added. Uses the `jpeg-encoder` crate (pure Rust, same no-C-toolchain constraint that drove the PNG encoder choice); its `add_exif_metadata` takes the exact same raw-TIFF payload `src/exif.rs` already builds for the PNG `eXIf` chunk and wraps it in the JPEG APP1 `Exif\0\0` header itself, so no format-specific EXIF-building code was needed. JPEG quality is a fixed internal constant (90), not caller-configurable — wasn't asked for and adding a knob nobody requested would be scope creep.
