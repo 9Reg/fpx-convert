@@ -23,3 +23,7 @@ target
 # Local sample FPX images for manual testing - not committed
 /test-media/*
 !/test-media/README.md
+
+# Packaged release binaries (built via scripts/build-release.sh) - not
+# committed; rebuild locally, see README.md
+/dist/

@@ -1,0 +1,15 @@
+[package]
+name = "fpx-convert"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cfb = "0.14"
+jpeg-decoder = "0.3"
+png = "0.18"
+thiserror = "2"
+
+[profile.release]
+# Smaller binaries matter for a NAS deployment target; debug symbols aren't
+# needed in shipped release builds.
+strip = true
