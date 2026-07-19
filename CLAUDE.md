@@ -24,9 +24,13 @@ We write specs before we write code. Specs live in [specs/](specs/) and should d
 
 ## Git workflow
 
+**Claude is Greg's git helper, not just a commit-maker — Greg approves, Claude manages the mechanics.** Concretely:
+
 - Never commit directly to `main`. All work happens on a branch.
 - **Every new version/feature gets its own commit, with a detailed commit message** — not just a one-line summary. Explain what changed and why, the same way the rest of this repo's commit history and this file's Notes log do.
-- Greg creates the PR and merges it himself. Claude does not open PRs and does not merge.
+- **Claude owns keeping local git state correct and in sync**, so Greg never hits a broken "Sync Changes" in the IDE: before starting new work, fast-forward local `main` to `origin/main` and branch fresh off that — don't build on top of a branch whose content may already be merged. After a PR merges, don't reuse or keep building on that branch; prune it (`git branch -d`, `git remote prune origin`) and start the next piece of work from an up-to-date `main`.
+  - *Why this rule exists:* on 2026-07-19, a feature branch got merged via PR on GitHub (which auto-deletes the head branch on merge) while local git still had it checked out and thought it was tracking a live remote branch. A new commit landed on top of that orphaned branch, and the local `main` was stale too, so the IDE's "Sync Changes" failed outright (`git pull` couldn't find the remote ref anymore). Fixed by fast-forwarding `main` and cherry-picking the new commit onto a fresh branch. Keeping `main` synced and branching fresh avoids this happening again.
+- Once a branch is pushed and ready, Greg creates the PR and merges it himself — Claude does not open PRs and does not merge. Claude's job ends at "pushed, clean, ready for you to open the PR."
 
 ## How to work with Greg on this project
 
