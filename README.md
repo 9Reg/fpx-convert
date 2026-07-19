@@ -25,8 +25,9 @@ fpx-convert --help
 ## Developing
 
 This repo's `.devcontainer/` sets up everything needed: a Rust toolchain,
-both required cross-compilation targets, and the matching cross-linkers.
-Open the repo in the devcontainer, then:
+both required cross-compilation targets, and Zig (used via `cargo-zigbuild`
+as the cross-linker for fully static musl binaries). Open the repo in the
+devcontainer, then:
 
 ```
 cargo build          # debug build for the host architecture
@@ -46,14 +47,16 @@ fpx-convert must run on two architectures: **x86_64** (Asustor NAS) and
 ./scripts/build-release.sh
 ```
 
-This cross-compiles a release binary for each target, strips debug symbols,
-and packages everything into `dist/` (gitignored — rebuild locally rather
-than committing binaries):
+This cross-compiles a release binary for each target as a fully static
+musl binary (no `libc.so`/`ld-linux` dependency — runs regardless of
+whatever glibc, or lack of one, the NAS firmware ships), strips debug
+symbols, and packages everything into `dist/` (gitignored — rebuild
+locally rather than committing binaries):
 
 ```
 dist/
-  x86_64-unknown-linux-gnu/fpx-convert
-  aarch64-unknown-linux-gnu/fpx-convert
+  x86_64-unknown-linux-musl/fpx-convert
+  aarch64-unknown-linux-musl/fpx-convert
   0001-fpx-conversion-pipeline.md   # the behavioral spec, bundled so it
                                      # travels with the binaries even if
                                      # only dist/ is copied elsewhere
@@ -64,15 +67,16 @@ dist/
 ### Building outside the devcontainer
 
 If you're not using `.devcontainer/`, you'll need to source these
-yourself (see `.devcontainer/Dockerfile` for the exact package names on
-Debian/Ubuntu):
+yourself (see `.devcontainer/Dockerfile` for the exact version/install
+steps):
 
-- Rust targets: `rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu`
-- Cross-linkers: `gcc-x86-64-linux-gnu` + `libc6-dev-amd64-cross`, and
-  `gcc-aarch64-linux-gnu` + `libc6-dev-arm64-cross`
-- `.cargo/config.toml` (already checked into this repo) tells Cargo which
-  linker to use for each target — no extra setup needed once the above are
-  installed.
+- Rust targets: `rustup target add x86_64-unknown-linux-musl aarch64-unknown-linux-musl`
+- [Zig](https://ziglang.org/download/) (pinned version in the Dockerfile),
+  on your `PATH`
+- `cargo-zigbuild`: `cargo install cargo-zigbuild`
+
+No `.cargo/config.toml` linker config is needed — `cargo zigbuild` handles
+cross-linking for each target itself.
 
 ## References
 
