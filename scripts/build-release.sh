@@ -5,23 +5,25 @@
 # behavior and CLI contract, and a BUILD_INFO.txt recording exactly what
 # went into the build.
 #
+# Binaries are fully static (musl libc, no dynamic dependencies) so they
+# don't depend on whatever glibc version the NAS firmware happens to ship.
+# cargo-zigbuild cross-links them, using the Zig toolchain as a portable
+# stand-in for per-target cross-compiler packages.
+#
 # Run from inside the devcontainer (or anywhere with the prerequisites
 # below already set up) via: ./scripts/build-release.sh
 #
 # Prerequisites, if not using the devcontainer:
-#   - rustup targets: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu
-#   - cross-linkers: gcc-x86-64-linux-gnu, gcc-aarch64-linux-gnu (Debian/
-#     Ubuntu package names; see .devcontainer/Dockerfile for the exact
-#     apt-get invocation) plus libc6-dev-{amd64,arm64}-cross
-#   - .cargo/config.toml (already checked into this repo) telling Cargo
-#     which linker to use for each target
+#   - rustup targets: x86_64-unknown-linux-musl, aarch64-unknown-linux-musl
+#   - zig (see .devcontainer/Dockerfile for the pinned version/install steps)
+#   - cargo-zigbuild: cargo install cargo-zigbuild
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-TARGETS=(x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu)
+TARGETS=(x86_64-unknown-linux-musl aarch64-unknown-linux-musl)
 DIST_DIR="$REPO_ROOT/dist"
 
 rm -rf "$DIST_DIR"
@@ -29,7 +31,7 @@ mkdir -p "$DIST_DIR"
 
 for target in "${TARGETS[@]}"; do
     echo "==> Building $target"
-    cargo build --release --target "$target"
+    cargo zigbuild --release --target "$target"
 
     target_dir="$DIST_DIR/$target"
     mkdir -p "$target_dir"
