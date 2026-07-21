@@ -26,4 +26,7 @@ target
 
 # Packaged release binaries (built via scripts/build-release.sh) - not
 # committed; rebuild locally, see README.md
-/dist/
+/packaging/
+
+# Random
+.DS_Store
