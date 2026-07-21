@@ -53,16 +53,18 @@ fpx-convert must run on two architectures: **x86_64** (Asustor NAS) and
 This cross-compiles a release binary for each target as a fully static
 musl binary (no `libc.so`/`ld-linux` dependency — runs regardless of
 whatever glibc, or lack of one, the NAS firmware ships), strips debug
-symbols, and packages everything into `dist/` (gitignored — rebuild
-locally rather than committing binaries):
+symbols, and packages everything into `packaging/` (gitignored — rebuild
+locally rather than committing binaries). This is the default delivery
+path — each architecture gets its own directory so the two binaries are
+never mixed up:
 
 ```
-dist/
-  x86_64-unknown-linux-musl/fpx-convert
-  aarch64-unknown-linux-musl/fpx-convert
+packaging/
+  x86_64/fpx-convert                # x86_64-unknown-linux-musl
+  arm64/fpx-convert                 # aarch64-unknown-linux-musl
   0001-fpx-conversion-pipeline.md   # the behavioral spec, bundled so it
                                      # travels with the binaries even if
-                                     # only dist/ is copied elsewhere
+                                     # only packaging/ is copied elsewhere
   BUILD_INFO.txt                    # version, git commit, rustc version,
                                      # build timestamp
 ```
