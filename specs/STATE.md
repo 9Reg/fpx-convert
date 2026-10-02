@@ -1,7 +1,7 @@
 # fpx-convert — state
 
 Always current, ≤ 60 lines, every line bracketed with its command or marked inferred. Rules in
-`../claude/CLAUDE.md` § State and handoff. Created 2026-10-02; before that this repo had no state
+`../claude/CLAUDE.md` § "State in the repo, handoff in memory". Created 2026-10-02; before that this repo had no state
 file.
 
 ## Where `main` is

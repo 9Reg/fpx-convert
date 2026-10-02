@@ -27,17 +27,25 @@ deny() {
   exit 0
 }
 
-cmd=$(python3 -c 'import json,sys
+input=$(cat)
+cmd=$(printf '%s' "$input" | python3 -c 'import json,sys
 try: print(json.load(sys.stdin).get("tool_input",{}).get("command",""))
 except Exception: print("")' 2>/dev/null) || exit 0
 [ -n "$cmd" ] || exit 0
+# The checkout Claude is actually in. ${CLAUDE_PROJECT_DIR} and this script's path stay on the
+# main checkout when Claude works in a git worktree; the input's `cwd` follows Claude
+# (code.claude.com/docs/en/hooks, "Worktrees are different").
+cwd=$(printf '%s' "$input" | python3 -c 'import json,sys
+try: print(json.load(sys.stdin).get("cwd",""))
+except Exception: print("")' 2>/dev/null)
+top=$( [ -n "$cwd" ] && git -C "$cwd" rev-parse --show-toplevel 2>/dev/null ) || top=$REPO
 
 # Substring, not prefix: real commit calls are compound
 # (`test ... || exit 1; git add -A && git commit ...`), so a prefix match misses
 # exactly the case this guard exists for.
 case "$cmd" in *"git commit"*|*"git push"*) ;; *) exit 0 ;; esac
 
-cd "$REPO" 2>/dev/null || exit 0
+cd "$top" 2>/dev/null || exit 0
 
 branch=$(git branch --show-current 2>/dev/null) || exit 0
 upstream=$(git config --get "branch.${branch}.merge" 2>/dev/null || true)
