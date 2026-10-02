@@ -19,7 +19,7 @@
 # Exits 0 in every path — a crash here must never block unrelated work.
 set -uo pipefail
 
-REPO=/Users/greg/Documents/dev/fpx-convert
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"   # this repo, wherever it is cloned
 
 deny() {
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":%s}}\n' \
