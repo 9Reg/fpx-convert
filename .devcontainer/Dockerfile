@@ -16,6 +16,11 @@ RUN case "$(dpkg --print-architecture)" in \
     && rm /tmp/zig.tar.xz \
     && ln -s /usr/local/zig/zig /usr/local/bin/zig
 
+# Pre-create ~/.claude owned by vscode so the named volume devcontainer.json
+# mounts there (to persist claude auth/settings across rebuilds) inherits
+# this ownership instead of defaulting to root:root on first mount.
+RUN mkdir -p /home/vscode/.claude && chown -R vscode:vscode /home/vscode/.claude
+
 USER vscode
 
 # fpx-convert's two required build targets (both 64-bit), built as fully

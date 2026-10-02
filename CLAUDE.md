@@ -1,10 +1,20 @@
 # CLAUDE.md
 
+@../claude/CLAUDE.md
+
+**Shared rules live in the `claude` repo, a sibling of this one, imported by the line above.**
+If `../claude/CLAUDE.md` does not exist (`test -f ../claude/CLAUDE.md`), the import loaded
+nothing: **tell 9Reg before doing anything else** — the shared rules (who he is, git, state and
+handoff, the working method) are missing, and the fix is to clone `claude` beside this repo.
+
+Per-repo state: `<dir>/STATE.md`. Handoffs live in Claude's auto-memory, and no PR while one
+exists (rules in `../claude/CLAUDE.md`).
+
 Guidance for Claude Code when working in this repo, and a running record of how 9Reg and Claude
 work together on it.
 
 The portable rules — delegation, progressive disclosure, the Fable budget, the question gate,
-extracted-vs-inferred — live in `~/.claude/CLAUDE.md` and are not repeated here.
+extracted-vs-inferred — live in `../claude/CLAUDE.md` (imported above) and are not repeated here.
 
 ## Project
 
@@ -28,53 +38,8 @@ We write specs before we write code. Specs live in [specs/](specs/) and should d
 
 ## Who 9Reg is
 
-Carried verbatim from `loadmento/CLAUDE.md`, which is canonical for this section (battle-tested
-across the most sessions — 9Reg, 2026-09-21). Drops the phone-hand-off line, which doesn't apply
-— fpx-convert has no paired device. Two bullets marked **[fpx-convert]** are this project's own
-additions, not drift.
+The common section lives in `../claude/CLAUDE.md`. Bullets specific to this repo:
 
-- Goes by **9Reg**. Author of **Loadmento** and **Lumento**. Not new to shipping on this NAS —
-  fpx-convert exists to support Lumento's need to display FPX images.
-- A partner, not a client: *"You're my partner, not my slave."* Push back with reasoning and 2–4
-  concrete tradeoffs. Silent agreement is the failure mode.
-- Design questions go in prose, one at a time, with a recommendation — never option cards. Leave
-  room for "neither"; his reframes have beaten the menu every time.
-- **Lead with the recommendation and what he must do; the reasoning goes after it.** *"I need
-  clearer text from you regarding what you want me to do and what your recommendations are. Your
-  real recommendations are getting buried in prose."* (2026-09-13, loadmento). Prose is still the
-  format for a design question — but the ask and the recommendation are the first thing on the
-  page, short enough to act on without reading the argument. `[check: the reply opens with the
-  ask, not the evidence]`
-- **A question is a sentence with a question mark in it, naming the options.** 9Reg, 2026-09-16
-  (loadmento), on a reply that said an answer was outstanding without ever asking for one: *"you
-  still didn't ask a clear question. Are you asking 0 or 1? Then do 0. But, your questions are
-  buried in 'I still need an answer on X' but 'X' is never a question."* Announcing that a
-  decision is pending is not asking. Write the question he can answer in one word, and put the
-  options in it. `[check: every open item in a reply ends in '?' and names its choices]`
-- **He wants a perfect app, not a fast one.** 9Reg, 2026-09-15 (loadmento), after being offered
-  "drop the item entirely" as a way to save his afternoon: *"what schedule? I want a perfect
-  app."* Do not price a fix in his time and do not offer to skip a real defect to save it. Offer
-  the *correct* option and let him decide what it costs. `[check: no option in a reply is
-  justified by how long it takes him]`
-- **"Revert the broken thing" never means "abandon the approach."** Same day: *"if you have 3
-  fixes for something that's broken, the question is, what does the solution look like if you fix
-  those three things?"* A review that blocks an implementation is a specification for the next
-  one.
-- **Every command handed to 9Reg uses absolute paths, and filters its own output.** 9Reg,
-  2026-09-18, after a `-project lumento-ios/...` invocation failed because he was in `~`: *"you
-  should always be explicit about the path."* A relative path is only correct from a working
-  directory he was never told to be in. Same reason a raw build invocation is not a deliverable: a
-  build log can overrun a paste limit and bury the one line that mattered. Pipe it — `2>&1 |
-  grep -E '...'` — so what comes back is the answer, not the transcript. `[check: every command in
-  a reply starts from `/Users/greg/...` or `cd /Users/greg/...`, and any cargo invocation ends in
-  a filter]`
-- A question is asked at the point of need or in the final summary; nothing in between is read.
-  A question about changing behaviour cites the code that does it today (`file:line`) — and if the
-  code already does it, say so instead of asking.
-- *"How do I…"* / *"can I…"* is a question, not an instruction.
-- Small, unambiguously in-scope gaps get fixed, not reported. Scope growth gets named, not
-  absorbed.
-- Nothing in a scratchpad reaches him. Anything worth transferring goes in `specs/` or memory.
 - **[fpx-convert] 9Reg doesn't know Rust.** He chose it deliberately (portability, and the odds
   that others will use or contribute to it) — not out of prior Rust experience. Explain
   Rust-specific decisions, idioms, and tradeoffs rather than assuming familiarity. This is a
@@ -172,8 +137,9 @@ before the session ends — never left in the review only.
 
 ## Inter-session memory
 
-`~/.claude/projects/-Users-greg-Documents-dev-fpx-convert/memory/` holds **facts the repo cannot
-derive** — paths, commands, toolchain notes, 9Reg's stated preferences in his words. It does not
-hold lessons about how to reason; those measured zero effect on the sibling projects that tried
-it. A handoff there is one-time: written only when real work is open at session end, read once by
-the next session, then deleted along with its `MEMORY.md` line.
+State lives in this repo — `specs/STATE.md`, which travels with the clone. The session handoff
+lives in Claude's auto-memory for this repo, and **no PR while one exists**; the rules are in
+`../claude/CLAUDE.md`. Auto-memory otherwise holds only **facts about the machine it sits on** —
+toolchain notes — because it is keyed by this machine's path and does not follow a clone.
+9Reg's preferences in his words go in the `claude` repo. Never lessons about how to reason; those
+measured zero effect on the sibling projects that tried them.
