@@ -10,6 +10,20 @@
                 "isDefault": true
             },
             "problemMatcher": ["$rustc"]
+        },
+        {
+            "label": "release",
+            "type": "shell",
+            "command": "cargo build --release",
+            "group": "build",
+            "problemMatcher": ["$rustc"]
+        },
+        {
+            "label": "production",
+            "type": "shell",
+            "command": "./scripts/build-release.sh",
+            "group": "build",
+            "problemMatcher": ["$rustc"]
         }
     ]
 }
