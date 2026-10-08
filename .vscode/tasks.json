@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "cargo build",
+            "label": "Build fpx-convert (debug)",
             "type": "shell",
             "command": "cargo build",
             "group": {
@@ -12,14 +12,14 @@
             "problemMatcher": ["$rustc"]
         },
         {
-            "label": "release",
+            "label": "Build fpx-convert (release)",
             "type": "shell",
             "command": "cargo build --release",
             "group": "build",
             "problemMatcher": ["$rustc"]
         },
         {
-            "label": "production",
+            "label": "Build fpx-convert (production, x86_64 + arm64)",
             "type": "shell",
             "command": "./scripts/build-release.sh",
             "group": "build",
