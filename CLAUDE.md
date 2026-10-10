@@ -9,12 +9,6 @@ file, the shared rules did not load: tell 9Reg before doing anything else.** The
 This repo's state is in `STATE.md` (under `specs/` where the repo has one). Handoffs live in
 Claude's auto-memory, and no PR while one exists (rules in `../claude/CLAUDE.md`).
 
-Guidance for Claude Code when working in this repo, and a running record of how 9Reg and Claude
-work together on it.
-
-The portable rules — delegation, progressive disclosure, the Fable budget, the question gate,
-extracted-vs-inferred — live in `../claude/CLAUDE.md` (loaded through `~/.claude/CLAUDE.md`) and are not repeated here.
-
 ## Project
 
 fpx-convert converts FPX images into formats usable by modern web browsers. It's written in Rust so it can run efficiently on an Asustor NAS — Rust was a deliberate choice, not a default: 9Reg wants something others are more likely to pick up and use, not just the fastest path to done.
@@ -46,72 +40,11 @@ The common section lives in `../claude/CLAUDE.md`. Bullets specific to this repo
 - **[fpx-convert] Don't assume domain expertise 9Reg hasn't claimed** — FPX format quirks, NAS
   deployment constraints, etc. Ask rather than guess.
 
-## The working method
+## Mechanics
 
-### Design, review, plan, then build — in that order, never collapsed
-
-Four stages, and a stage is not skipped because the work looks small. A design that has passed
-review is **not** cleared to build — it still owes an implementation plan. Offering to build
-straight from a reviewed design is the error this rule names.
-
-Where the stages live: the design and the plan are `specs/` files; the review is stored verbatim
-beside the design with its Disposition block; the build is the branch. `[check: a build commit's
-entry cites a design file, a `*-REVIEW.md` beside it, and a plan]`
-
-### What needs a second context before it commits
-
-**Decided by: Claude**, per the global rule that each project names its own triggers — flag if
-any of these are wrong for how this repo actually works:
-
-- Any claim about FPX's binary layout that rests on inference rather than a byte-level check
-  against a real sample file or a reference implementation (see the `libfpx` note in Notes below
-  — this is exactly the kind of claim that has bitten this project before).
-- A change to the release build/linking configuration (target triple, static-linking flags) —
-  the musl-vs-gnu and 32-bit-cross-linker incidents in Notes below are both examples of this
-  going wrong silently (binaries that only ran because the build host happened to support them).
-- A fix design that **departs** from what a review specified. A fix built *as specified* is code
-  under an approved design — no review.
-
-### The cap — one review per PR
-
-One adversarial review per PR, and only when a trigger above fires. A second review of the same
-artifact only if the first returned a CRITICAL or NO. None on a prose-only branch — wording, a
-spec that documents already-shipped code, an index regeneration.
-
-**No waiver base rates exist here yet** (unlike loadmento, which has measured them across dozens
-of reviews) — default to reviewing rather than waiving until this project has enough review
-history to measure its own rates.
-
-Reviewer: **a fresh Opus context**, commissioned adversarially — *"re-derive every claim from the
-primary source; do not take the prose on trust."*
-
-**Storing a finding is not discharging it.** Every stored review opens with a Disposition block,
-one row per finding: FIXED with `file:line`, FILED with a Notes entry or backlog item, REJECTED
-with the evidence that beat it, or ACK. Every finding is fixed now or becomes a tracked item
-before the session ends — never left in the review only.
-
-### Mechanics
-
-- **Never on `main`.** The first command of every commit call is one that *fails* on `main`:
-  `test "$(git branch --show-current)" != main || exit 1` — never an `echo`. All work happens on
-  a branch (`git checkout -b <type>/<short-desc>`), landed via PR. `[enforced: PreToolUse hook,
-  .claude/hooks/guard-commit.sh]`
-- **`cargo fmt` before every Rust commit.** `[enforced: the same hook]`
-- **A regression test is proven by its failure.** Revert each fix alone; the predicted symptom
-  must appear.
-- **Calls you made alone are marked `**Decided by: Claude`** in the entry. `[check: grep]`
-- **Unresearched numbers are labelled** `ours, a placeholder, not measured`. `[check: grep]`
-- **Every factual line in a handoff or summary carries its command in brackets, or the word
-  "inferred".**
-
-## Git workflow
-
-**Claude is 9Reg's git helper, not just a commit-maker — 9Reg approves, Claude manages the mechanics.** Concretely:
-
-- **Every new version/feature gets its own commit, with a detailed commit message** — not just a one-line summary. Explain what changed and why, the same way the rest of this repo's commit history and this file's Notes log do.
-- **Claude owns keeping local git state correct and in sync**, so 9Reg never hits a broken "Sync Changes" in the IDE: before starting new work, fast-forward local `main` to `origin/main` and branch fresh off that — don't build on top of a branch whose content may already be merged. After a PR merges, don't reuse or keep building on that branch; prune it (`git branch -d`, `git remote prune origin`) and start the next piece of work from an up-to-date `main`.
-  - *Why this rule exists:* on 2026-07-19, a feature branch got merged via PR on GitHub (which auto-deletes the head branch on merge) while local git still had it checked out and thought it was tracking a live remote branch. A new commit landed on top of that orphaned branch, and the local `main` was stale too, so the IDE's "Sync Changes" failed outright (`git pull` couldn't find the remote ref anymore). Fixed by fast-forwarding `main` and cherry-picking the new commit onto a fresh branch. Keeping `main` synced and branching fresh avoids this happening again.
-- Once a branch is pushed and ready, 9Reg creates the PR and merges it himself — Claude does not open PRs and does not merge. Claude's job ends at "pushed, clean, ready for you to open the PR."
+- **Never on `main`**, and `cargo fmt` before every Rust commit — both enforced by
+  `.claude/hooks/guard-commit.sh`.
+- Each version or feature gets its own commit with a detailed message: what changed and why.
 
 ## Repo layout
 
@@ -134,11 +67,3 @@ before the session ends — never left in the review only.
 - **Added JPEG as an opt-in output format** (`--format png|jpeg`, default `png`) alongside spec 0001's original PNG-only output — spec updated first (per the spec-first rule above), then `src/jpeg_writer.rs` added. Uses the `jpeg-encoder` crate (pure Rust, same no-C-toolchain constraint that drove the PNG encoder choice); its `add_exif_metadata` takes the exact same raw-TIFF payload `src/exif.rs` already builds for the PNG `eXIf` chunk and wraps it in the JPEG APP1 `Exif\0\0` header itself, so no format-specific EXIF-building code was needed. JPEG quality is a fixed internal constant (90), not caller-configurable — wasn't asked for and adding a knob nobody requested would be scope creep.
 - **Release output moved from `dist/` to `packaging/`, with per-arch subdirectories renamed from Rust target triples to short names** (`packaging/x86_64/`, `packaging/arm64/`, not `packaging/x86_64-unknown-linux-musl/`) — this is the default delivery path for shipping binaries, kept separate from `target/` (raw `cargo build` output, also gitignored, not meant to be shipped from). `scripts/build-release.sh` and `.gitignore` updated together so the two never drift apart.
 
-## Inter-session memory
-
-State lives in this repo — `specs/STATE.md`, which travels with the clone. The session handoff
-lives in Claude's auto-memory for this repo, and **no PR while one exists**; the rules are in
-`../claude/CLAUDE.md`. Auto-memory otherwise holds only **facts about the machine it sits on** —
-toolchain notes — because it is keyed by this machine's path and does not follow a clone.
-9Reg's preferences in his words go in the `claude` repo. Never lessons about how to reason; those
-measured zero effect on the sibling projects that tried them.
