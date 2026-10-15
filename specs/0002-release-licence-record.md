@@ -45,7 +45,10 @@ file), or `url:<exact upstream tarball URL>` (field 5 is that file's SHA-256).
 
 ## Which components get a line
 
-Everything linked into that architecture's binary, nothing else:
+Everything the final link of that architecture's binary is given, nothing else — including an
+input that ends up contributing 0 bytes. One rule for every input means anyone can check the
+record against the link command without a judgement call; `BUILD_INFO.txt` shows what each input
+actually contributed (9Reg, 2026-10-15).
 
 1. **fpx-convert itself.** Licence `AGPL-3.0-or-later` (also the `license` field in `Cargo.toml`).
    Source: a `git archive` of the exact commit built, `fpx-convert-<version>-<shortsha>.tar.gz`
@@ -66,8 +69,9 @@ Everything linked into that architecture's binary, nothing else:
      `url:` the `rustc-<version>-src.tar.xz` of the pinned rustc.
 4. **The C library and runtime the final link used**, proved from the build (next section), with
    `url:` the exact upstream tarball each was compiled from. With the pinned toolchain these are
-   zig's bundled musl 1.2.5 (`libc.a` and the `crt1.o`/`crti.o`/`crtn.o` start-up objects) and
-   zig's bundled LLVM libunwind 18.1.6.
+   zig's bundled musl 1.2.5 (`libc.a` and the `crt1.o`/`crti.o`/`crtn.o` start-up objects),
+   zig's bundled LLVM libunwind 18.1.6, and zig's own compiler-rt (`libcompiler_rt.a`, compiled
+   from zig 0.13.0's `lib/compiler_rt`; source `url:` the `zig-0.13.0.tar.xz` source tarball).
 
 A component that cannot be pinned to an exact version and source stops the build.
 
@@ -83,11 +87,14 @@ record is derived from the link, not assumed:
    (checked: byte-identical with and without them).
 2. The `ld.lld` command is replayed with `-Map=<file>`. The replay's output must be byte-identical
    to the shipped binary, or the build fails — that is what ties the map to the real link.
-3. Every input that contributes bytes to the binary must be one the record covers: a crate from 2,
-   a sysroot crate from 3, or zig's `libc.a`, `crt*.o` or `libunwind.a`. Anything else — zig's
-   `libcompiler_rt.a`, Rust's self-contained objects, an unknown archive — fails the build until
-   the record is extended to cover it. (With the pinned toolchain, zig's compiler-rt is passed to
-   the linker but contributes 0 bytes: Rust's `compiler_builtins` already defines every symbol.)
+3. Every input the linker is given must be one the record covers: a crate from 2, a sysroot
+   crate from 3, or zig's `libc.a`, `crt*.o`, `libunwind.a` or `libcompiler_rt.a`. Anything else
+   — Rust's self-contained objects, an unknown archive — fails the build until the record is
+   extended to cover it.
+   zig's compiler-rt is recorded, but must also contribute 0 bytes, or the build fails: with the
+   pinned toolchain Rust's `compiler_builtins` already defines every symbol, and the day that
+   changes someone should look at which of compiler-rt's functions (ported from LLVM or musl)
+   came in, rather than the record absorbing it silently.
 4. Every crate rlib the linker is given must be in the crate list (2 or 3).
 5. The musl version is read from the linked `libc.a` itself (`__libc_version` in `version.o`) and
    must equal the version the record names.
@@ -108,8 +115,9 @@ contributes.
   takes it from there: `jpeg-encoder`'s IJG terms are the header of its `src/fdct.rs`
   (`jpeg-encoder-src-fdct.rs-IJG-notice`);
 - one copy each of the AGPL (`fpx-convert-LICENSE`), Rust's (`COPYRIGHT-library.html` and the
-  MIT and Apache-2.0 texts from the pinned toolchain's `share/doc/rust`), musl's `COPYRIGHT` and
-  LLVM libunwind's `LICENSE.TXT`.
+  MIT and Apache-2.0 texts from the pinned toolchain's `share/doc/rust`), musl's `COPYRIGHT`,
+  LLVM libunwind's `LICENSE.TXT`, and for zig's compiler-rt zig's `LICENSE` plus the LLVM
+  project licence (the same `LICENSE.TXT`, which every LLVM sub-project shares).
 
 **The build fails if any line's licence has no text:** for each SPDX identifier on a line, one of
 that component's files must contain the licence's recognisable text. An `OR` needs one alternative
@@ -142,6 +150,12 @@ Flagged for review, per this directory's conventions:
   licence statements (`MIT AND Apache-2.0 WITH LLVM-exception AND (MIT OR Apache-2.0)` is the
   crate's own; libunwind is `Apache-2.0 WITH LLVM-exception AND (NCSA OR MIT)`, from its
   `LICENSE.TXT`: the project licence plus the legacy dual licence its older code still carries).
+- zig's compiler-rt is recorded as `MIT AND Apache-2.0 WITH LLVM-exception`: zig's own MIT
+  licence, plus LLVM's for the functions its sources say are ported from LLVM's compiler-rt
+  (the ones ported from musl are MIT already). The same conservative reading as
+  `compiler_builtins`. The installed `lib/compiler_rt` matches the `zig-0.13.0.tar.xz` source
+  except 67 `*_test.zig` files, which zig's binary release ships empty and which are never
+  linked.
 - 12-digit short SHAs in names, so they never change length.
 - The publish step is a separate script from the build: the build runs where the toolchain is (the
   devcontainer), the push where git credentials are.

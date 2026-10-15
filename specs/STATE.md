@@ -5,24 +5,29 @@ Always current, ≤ 60 lines, every line bracketed with its command or marked in
 
 ## Where `main` is
 
-- `main` at `50b8402` — PR #14 (CLAUDE.md cut to core) merged
+- `main` at `2a89b86` — PR #15 (spec 0002: release licence record, `dist` branch) merged
   [`git log --oneline -1 origin/main`, 2026-10-15].
-- Crate version `0.1.0`, licence `AGPL-3.0-or-later` on `feat/release-licence-record`
-  [`grep ^version\|^license Cargo.toml`, 2026-10-15].
+- Crate version `0.1.0`, licence `AGPL-3.0-or-later` [`grep ^version\|^license Cargo.toml`].
+
+## Released
+
+- `dist` at `75191bbf`, tag `fpx-convert-0.1.0-2a89b86c8a30`: built by 9Reg from `main` in the
+  devcontainer, published with `scripts/publish-dist.sh`; binary sha256 x86-64 `57574ac2…`,
+  arm64 `22e61e72…` [`git ls-remote origin dist`, `packaging/BUILD_INFO.txt`, 2026-10-15].
 
 ## In flight
 
-- `feat/release-licence-record`: spec 0002 (release licence record, `dist` branch), toolchain
-  pins, `scripts/build-release.sh` + `scripts/licence-record.py` + `scripts/publish-dist.sh`.
-  Both arches build and pass every check; two builds are byte-identical
-  [`./scripts/build-release.sh` twice in the devcontainer image, `shasum` of packaging/, 2026-10-15].
+- `feat/record-every-linker-input` (stacked on `chore/state-dist-published`): spec 0002 and
+  `licence-record.py` now give every linker input a line, 0-byte ones included (9Reg's choice,
+  2026-10-15), which adds `zig compiler-rt` (35 lines per arch). Binaries unchanged
+  [`./scripts/build-release.sh` in the devcontainer image, 2026-10-15].
 
 ## Next
 
-- After the branch merges: run `./scripts/build-release.sh` from `main` in the devcontainer, then
-  `./scripts/publish-dist.sh` on the host; hand Lumento the tag, dist commit, both `entries.tsv`
-  and the link evidence from `BUILD_INFO.txt` (inferred: the task's last step).
+- After merge: 9Reg rebuilds from `main` in the devcontainer, then `scripts/publish-dist.sh`
+  makes the second `dist` commit with a new tag (the code commit changes).
+- Hand Lumento the tag, dist commit, both `entries.tsv` and the link evidence.
 
 ## Waiting on 9Reg
 
-- Open and merge the PR for `feat/release-licence-record`.
+- Merge `feat/record-every-linker-input` (it carries `chore/state-dist-published` too).
