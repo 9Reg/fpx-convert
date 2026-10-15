@@ -98,7 +98,13 @@ record is derived from the link, not assumed:
 4. Every crate rlib the linker is given must be in the crate list (2 or 3).
 5. The musl version is read from the linked `libc.a` itself (`__libc_version` in `version.o`) and
    must equal the version the record names.
-6. The rustc and zig versions must equal the pins; the upstream URLs and SHA-256s in the script are
+6. `jpeg-encoder`'s `simd` feature must not be enabled for either target, or the build fails
+   before compiling. That feature compiles its `src/avx2/fdct.rs`, a port of libjpeg-turbo's
+   SIMD code (Cendio, MIYASAKA copyrights) that its declared licence does not mention; with it
+   off the file is not compiled (Lumento confirmed by disassembly that the x86-64 0.1.0 binary
+   has none of its AVX2 instructions), so no notice is owed. Turning it on first needs the
+   record to carry libjpeg-turbo's zlib/BSD notice for that file.
+7. The rustc and zig versions must equal the pins; the upstream URLs and SHA-256s in the script are
    tied to those versions.
 
 `BUILD_INFO.txt` carries the result: per architecture, each linker input and the bytes it

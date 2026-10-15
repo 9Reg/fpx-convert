@@ -29,6 +29,20 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+# jpeg-encoder's simd feature compiles a libjpeg-turbo port whose notice the record does not
+# carry (spec 0002, "Proving what the final link used", 6): refuse it before building.
+for target in x86_64-unknown-linux-musl aarch64-unknown-linux-musl; do
+    if ! features="$(cargo tree --quiet --locked -e features -i jpeg-encoder --target "$target")"; then
+        echo "build-release: cannot resolve jpeg-encoder's features for $target" >&2
+        exit 1
+    fi
+    if grep -q 'jpeg-encoder feature "simd"' <<<"$features"; then
+        echo "build-release: jpeg-encoder's simd feature is enabled for $target; the licence" >&2
+        echo "record lacks libjpeg-turbo's notice for src/avx2/fdct.rs (spec 0002)" >&2
+        exit 1
+    fi
+done
+
 # Rust target triple -> lumento's architecture name.
 declare -A TARGETS=(
     [x86_64-unknown-linux-musl]=x86-64
