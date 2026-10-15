@@ -1,70 +1,65 @@
 #!/usr/bin/env bash
-# Builds release binaries for both of fpx-convert's required targets
-# (x86_64 Asustor NAS, aarch64 for ARM-based Asustor models/devices) and
-# packages them into packaging/x86_64/ and packaging/arm64/ (the default
-# delivery path for shipping binaries), alongside the spec that documents
-# fpx-convert's behavior and CLI contract, and a BUILD_INFO.txt recording
-# exactly what went into the build.
+# Builds a release of fpx-convert for both required targets (x86_64 Asustor NAS, aarch64 for
+# ARM-based models) and its licence record (spec 0002), into packaging/ in the layout of the
+# `dist` branch:
 #
-# Binaries are fully static (musl libc, no dynamic dependencies) so they
-# don't depend on whatever glibc version the NAS firmware happens to ship.
-# cargo-zigbuild cross-links them, using the Zig toolchain as a portable
-# stand-in for per-target cross-compiler packages.
+#   packaging/fpx-convert/<arch>/fpx-convert
+#   packaging/third-party/fpx-convert-<arch>/{entries.tsv,licenses/,source/}
+#   packaging/BUILD_INFO.txt
 #
-# Run from inside the devcontainer (or anywhere with the prerequisites
-# below already set up) via: ./scripts/build-release.sh
+# <arch> is x86-64 or arm64. Binaries are fully static (musl, no dynamic dependencies), so they
+# don't depend on whatever libc the NAS firmware ships. cargo-zigbuild cross-links them with Zig.
 #
-# Prerequisites, if not using the devcontainer:
-#   - rustup targets: x86_64-unknown-linux-musl, aarch64-unknown-linux-musl
-#   - zig (see .devcontainer/Dockerfile for the pinned version/install steps)
-#   - cargo-zigbuild: cargo install cargo-zigbuild
+# Run it inside the devcontainer, where the pinned toolchain is: ./scripts/build-release.sh
+# It refuses a dirty working tree (a release is built from a commit) and a toolchain that differs
+# from the pins (rust-toolchain.toml, .devcontainer/Dockerfile). scripts/publish-dist.sh then
+# commits packaging/ to the `dist` branch, from the host.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-# Rust target triple -> short delivery directory name.
-declare -A TARGETS=(
-    [x86_64-unknown-linux-musl]=x86_64
-    [aarch64-unknown-linux-musl]=arm64
-)
-PACKAGING_DIR="$REPO_ROOT/packaging"
+# The bind-mounted checkout is owned by the host user; let git read it without changing any
+# global config.
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0="$REPO_ROOT"
 
-rm -rf "$PACKAGING_DIR"
-mkdir -p "$PACKAGING_DIR"
-
-for target in "${!TARGETS[@]}"; do
-    echo "==> Building $target"
-    cargo zigbuild --release --target "$target"
-
-    target_dir="$PACKAGING_DIR/${TARGETS[$target]}"
-    mkdir -p "$target_dir"
-    cp "target/$target/release/fpx-convert" "$target_dir/"
-done
-
-cp specs/0001-fpx-conversion-pipeline.md "$PACKAGING_DIR/"
-
-VERSION="$(cargo metadata --no-deps --format-version 1 | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)"
-GIT_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
-GIT_DIRTY=""
-if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-    GIT_DIRTY=" (with uncommitted changes)"
+if [ -n "$(git status --porcelain)" ]; then
+    echo "build-release: the working tree is not clean; commit or stash first" >&2
+    exit 1
 fi
 
-cat > "$PACKAGING_DIR/BUILD_INFO.txt" <<EOF
-fpx-convert $VERSION
+# Rust target triple -> lumento's architecture name.
+declare -A TARGETS=(
+    [x86_64-unknown-linux-musl]=x86-64
+    [aarch64-unknown-linux-musl]=arm64
+)
 
-Built:       $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-Git commit:  $GIT_COMMIT$GIT_DIRTY
-Rustc:       $(rustc --version)
-Targets:     x86_64-unknown-linux-musl (packaging/x86_64), aarch64-unknown-linux-musl (packaging/arm64)
+# A fresh target directory per release: the link evidence comes from this build's own log, so
+# nothing may be reused from an earlier one.
+BUILD_DIR="$REPO_ROOT/target/release-build"
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
 
-Run any binary below with --help for full usage; see
-0001-fpx-conversion-pipeline.md in this directory for the full behavioral
-spec (CLI contract, exit codes, error handling, scope).
-EOF
+record_args=()
+for target in x86_64-unknown-linux-musl aarch64-unknown-linux-musl; do
+    arch="${TARGETS[$target]}"
+    target_dir="$BUILD_DIR/$arch"
+    log="$BUILD_DIR/$arch.log"
+    echo "==> Building $target"
+    # -Csave-temps keeps the objects zig's ld.lld reads, so the link can be replayed with a map;
+    # ZIG_VERBOSE_LINK=1 prints that ld.lld command. Neither changes the binary.
+    if ! CARGO_TARGET_DIR="$target_dir" RUSTFLAGS=-Csave-temps ZIG_VERBOSE_LINK=1 \
+        cargo zigbuild --locked --release --target "$target" >"$log" 2>&1; then
+        tail -n 40 "$log" >&2
+        exit 1
+    fi
+    record_args+=("$target:$arch:$target_dir:$log")
+done
+
+echo "==> Building the licence record"
+python3 "$REPO_ROOT/scripts/licence-record.py" "$REPO_ROOT/packaging" "${record_args[@]}"
 
 echo
-echo "==> packaging/ contents:"
-find "$PACKAGING_DIR" -type f -exec ls -lh {} \; | awk '{print $5, $9}'
+echo "==> packaging/:"
+cat "$REPO_ROOT/packaging/BUILD_INFO.txt"

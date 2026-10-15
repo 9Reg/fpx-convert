@@ -44,41 +44,68 @@ that directory is gitignored, so nothing there gets committed.
 ## Building a release (both targets)
 
 fpx-convert must run on two architectures: **x86_64** (Asustor NAS) and
-**aarch64** (other, ARM-based Asustor models/devices). Build both with:
+**aarch64** (other, ARM-based Asustor models/devices). A release is built
+inside the devcontainer, from a clean, committed checkout:
 
 ```
 ./scripts/build-release.sh
 ```
 
-This cross-compiles a release binary for each target as a fully static
-musl binary (no `libc.so`/`ld-linux` dependency — runs regardless of
-whatever glibc, or lack of one, the NAS firmware ships), strips debug
-symbols, and packages everything into `packaging/` (gitignored — rebuild
-locally rather than committing binaries). This is the default delivery
-path — each architecture gets its own directory so the two binaries are
-never mixed up:
+This cross-compiles a fully static musl binary for each target (no
+`libc.so`/`ld-linux` dependency, so it runs whatever libc the NAS firmware
+ships) and builds the **licence record** that
+[spec 0002](specs/0002-release-licence-record.md) defines: every component
+linked into each binary, its licence and licence texts, and its source.
+The record is derived from the real link, not assumed — the build replays
+zig's final link command with a linker map, requires the replay to be
+byte-identical to the shipped binary, and fails if anything contributes
+bytes that the record does not cover, or if any licence lacks its text.
+Everything lands in `packaging/` (gitignored):
 
 ```
 packaging/
-  x86_64/fpx-convert                # x86_64-unknown-linux-musl
-  arm64/fpx-convert                 # aarch64-unknown-linux-musl
-  0001-fpx-conversion-pipeline.md   # the behavioral spec, bundled so it
-                                     # travels with the binaries even if
-                                     # only packaging/ is copied elsewhere
-  BUILD_INFO.txt                    # version, git commit, rustc version,
-                                     # build timestamp
+  fpx-convert/x86-64/fpx-convert           # x86_64-unknown-linux-musl
+  fpx-convert/arm64/fpx-convert            # aarch64-unknown-linux-musl
+  third-party/fpx-convert-<arch>/
+    entries.tsv                            # one line per component, 6 fields
+    licenses/                              # every licence text
+    source/                                # fpx-convert's own source tarball
+  BUILD_INFO.txt                           # commit, toolchain, hashes,
+                                           # link evidence
 ```
+
+Building the same commit twice gives byte-identical files. The toolchain
+is pinned (`rust-toolchain.toml`; zig and cargo-zigbuild in
+`.devcontainer/Dockerfile`) and the build refuses any other version,
+because the record's upstream source URLs are tied to those versions.
+
+### Publishing to the `dist` branch
+
+Releases are published as commits on the orphan `dist` branch (never
+merged into `main`), which Lumento fetches. After building on `main`, on
+the host where git can push:
+
+```
+./scripts/publish-dist.sh
+```
+
+It refuses anything but a clean `main` that matches `origin/main` and a
+`packaging/` built from that commit, commits `packaging/` to `dist`, tags
+it `fpx-convert-<version>-<12-digit sha>` and pushes both. Running it
+again for the same build changes nothing.
 
 ### Building outside the devcontainer
 
-If you're not using `.devcontainer/`, you'll need to source these
-yourself (see `.devcontainer/Dockerfile` for the exact version/install
-steps):
+Releases need the devcontainer's pinned toolchain. For ordinary
+cross-builds elsewhere, see `.devcontainer/Dockerfile` for the exact
+versions:
 
-- Rust targets: `rustup target add x86_64-unknown-linux-musl aarch64-unknown-linux-musl`
+- Rust: `rustup` installs the pinned toolchain and both musl targets from
+  `rust-toolchain.toml` on first use
 - [Zig](https://ziglang.org/download/) (pinned version in the Dockerfile),
   on your `PATH`
-- `cargo-zigbuild`: `cargo install cargo-zigbuild`
+- `cargo-zigbuild` (pinned version in the Dockerfile):
+  `cargo install --locked cargo-zigbuild@<version>`
 
 No `.cargo/config.toml` linker config is needed — `cargo zigbuild` handles
 cross-linking for each target itself.
