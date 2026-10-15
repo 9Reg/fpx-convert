@@ -1,0 +1,8 @@
+# The exact Rust toolchain release builds use (spec 0002). rustup reads this and installs it on
+# first use. The release licence record names this rustc and is tied to it: the Rust source URL
+# and SHA-256 in scripts/licence-record.py are for this version, and rust-src is where the record
+# reads the standard library's crates and licences from.
+[toolchain]
+channel = "1.98.1"
+components = ["rust-src", "rustfmt", "clippy"]
+targets = ["x86_64-unknown-linux-musl", "aarch64-unknown-linux-musl"]
