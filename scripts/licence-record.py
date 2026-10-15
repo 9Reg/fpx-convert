@@ -50,10 +50,18 @@ ZIG_BUNDLED = {
             "libunwind-18.1.6.src.tar.xz",
             "7ed4651612a5c07aadfda38fdbd4e7e786877826790b5d74ce30edd638eb00b3",
         ),
+        # zig's compiler-rt is zig's own code (lib/compiler_rt), so its source is zig's.
+        "compiler_rt": (
+            "0.13.0",
+            "https://ziglang.org/download/0.13.0/zig-0.13.0.tar.xz",
+            "06c73596beeccb71cc073805bdb9c0e05764128f16478fa53bf17dfabc1d4318",
+        ),
     },
 }
 MUSL_LICENCE = "MIT"
 LIBUNWIND_LICENCE = "Apache-2.0 WITH LLVM-exception AND (NCSA OR MIT)"
+# zig's MIT, plus LLVM's for the functions ported from LLVM's compiler-rt (spec 0002).
+COMPILER_RT_LICENCE = "MIT AND Apache-2.0 WITH LLVM-exception"
 STD_LICENCE = "MIT OR Apache-2.0"
 
 # Recognisable text per SPDX identifier: every phrase must appear (whitespace and case ignored).
@@ -427,6 +435,7 @@ def record_arch(out, triple, arch, target_dir, log, tc, version, commit, archive
     zig_pin = tc["zig"]
     musl_ver, musl_url, musl_sha = ZIG_BUNDLED[zig_pin]["musl"]
     unwind_ver, unwind_url, unwind_sha = ZIG_BUNDLED[zig_pin]["libunwind"]
+    crt_ver, crt_url, crt_sha = ZIG_BUNDLED[zig_pin]["compiler_rt"]
 
     app, lib_names = app_crates(triple)
     sysroot = sysroot_crates(tc["library"])
@@ -467,15 +476,16 @@ def record_arch(out, triple, arch, target_dir, log, tc, version, commit, archive
         elif zig_cache in p.parents and p.name == "libcompiler_rt.a":
             labels[path] = "zig libcompiler_rt.a"
         else:
-            labels[path] = f"unrecognised {p.name}"
+            fail(f"{triple}: the linker is given {path}, which the record does not cover")
     for source, size in contributions.items():
         if source == "<internal>":
             continue
         label = labels.get(source)
         if label is None:
             fail(f"{triple}: map shows {size} bytes from {source}, which is not on the link line")
-        if size and (label.startswith("unrecognised") or label == "zig libcompiler_rt.a"):
-            fail(f"{triple}: {source} contributes {size} bytes and the record does not cover it")
+        if size and label == "zig libcompiler_rt.a":
+            fail(f"{triple}: zig's compiler-rt contributes {size} bytes; spec 0002 says review "
+                 "which of its functions came in before releasing")
 
     if musl_libc is None:
         fail(f"{triple}: zig's musl libc.a is not on the link line")
@@ -553,6 +563,13 @@ def record_arch(out, triple, arch, target_dir, log, tc, version, commit, archive
     add_files("musl", "musl", [tc["zig_lib"] / "libc/musl/COPYRIGHT"])
     entry("libunwind", unwind_ver, LIBUNWIND_LICENCE, unwind_sha, f"url:{unwind_url}")
     add_files("libunwind", "libunwind", [tc["zig_lib"] / "libunwind/LICENSE.TXT"])
+    if "zig libcompiler_rt.a" in labels.values():
+        entry("zig compiler-rt", crt_ver, COMPILER_RT_LICENCE, crt_sha, f"url:{crt_url}")
+        add_text("zig compiler-rt", "zig-compiler-rt-LICENSE",
+                 (tc["zig_lib"].parent / "LICENSE").read_bytes())
+        # LLVM's project licence; every LLVM sub-project ships the same LICENSE.TXT.
+        add_text("zig compiler-rt", "zig-compiler-rt-LLVM-LICENSE.TXT",
+                 (tc["zig_lib"] / "libunwind/LICENSE.TXT").read_bytes())
 
     for e in entries:
         comp, licence = e[0], e[2]

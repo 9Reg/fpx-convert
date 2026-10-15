@@ -58,8 +58,10 @@ ships) and builds the **licence record** that
 linked into each binary, its licence and licence texts, and its source.
 The record is derived from the real link, not assumed — the build replays
 zig's final link command with a linker map, requires the replay to be
-byte-identical to the shipped binary, and fails if anything contributes
-bytes that the record does not cover, or if any licence lacks its text.
+byte-identical to the shipped binary, and fails if the linker is given
+anything the record does not cover, or if any licence lacks its text.
+Every input the linker is given gets a line, even one that ends up
+contributing 0 bytes; `BUILD_INFO.txt` shows what each contributed.
 Everything lands in `packaging/` (gitignored):
 
 ```

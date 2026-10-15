@@ -15,13 +15,19 @@ Always current, ≤ 60 lines, every line bracketed with its command or marked in
   devcontainer, published with `scripts/publish-dist.sh`; binary sha256 x86-64 `57574ac2…`,
   arm64 `22e61e72…` [`git ls-remote origin dist`, `packaging/BUILD_INFO.txt`, 2026-10-15].
 
+## In flight
+
+- `feat/record-every-linker-input` (stacked on `chore/state-dist-published`): spec 0002 and
+  `licence-record.py` now give every linker input a line, 0-byte ones included (9Reg's choice,
+  2026-10-15), which adds `zig compiler-rt` (35 lines per arch). Binaries unchanged
+  [`./scripts/build-release.sh` in the devcontainer image, 2026-10-15].
+
 ## Next
 
-- Settle with Lumento whether linker inputs that contribute 0 bytes get an `entries.tsv` line
-  (today: 0-byte crates listed, 0-byte zig `libcompiler_rt.a` not). Asked the Lumento session
-  2026-10-15 (inferred: no answer yet). A change means a spec 0002 edit and a new release.
+- After merge: 9Reg rebuilds from `main` in the devcontainer, then `scripts/publish-dist.sh`
+  makes the second `dist` commit with a new tag (the code commit changes).
 - Hand Lumento the tag, dist commit, both `entries.tsv` and the link evidence.
 
 ## Waiting on 9Reg
 
-- Merge `chore/state-dist-published` (this file).
+- Merge `feat/record-every-linker-input` (it carries `chore/state-dist-published` too).
