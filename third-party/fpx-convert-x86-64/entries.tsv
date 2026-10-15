@@ -1,4 +1,4 @@
-fpx-convert	0.1.0 (statically linked)	AGPL-3.0-or-later	x86-64	153e5ae7675f80c263dd5abe2601f2ef7f8f0868f11500781518dd75a904723e	fpx-convert-0.1.0-2a89b86c8a30.tar.gz
+fpx-convert	0.1.0 (statically linked)	AGPL-3.0-or-later	x86-64	c552a8aeb27482682ff07c7d40d5a894054e8a75b291758db3e0cc4fc5a67261	fpx-convert-0.1.0-783d49d609e9.tar.gz
 adler2	2.0.1 (statically linked)	0BSD OR MIT OR Apache-2.0	x86-64	320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa	crate:adler2 2.0.1
 bitflags	2.13.1 (statically linked)	MIT OR Apache-2.0	x86-64	b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da	crate:bitflags 2.13.1
 cfb	0.14.0 (statically linked)	MIT	x86-64	a347dcabdae9c31b0825fd6a8bed285ec9c2acb89c47827126d52fa4f59cece3	crate:cfb 0.14.0
@@ -32,3 +32,4 @@ object	0.37.3 (statically linked)	Apache-2.0 OR MIT	x86-64	ff76201f031d8863c38aa
 rustc-demangle	0.1.27 (statically linked)	MIT OR Apache-2.0	x86-64	b50b8869d9fc858ce7266cce0194bd74df58b9d0e3f6df3a9fc8eb470d95c09d	crate:rustc-demangle 0.1.27
 musl	1.2.5 (statically linked)	MIT	x86-64	a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4	url:https://musl.libc.org/releases/musl-1.2.5.tar.gz
 libunwind	18.1.6 (statically linked)	Apache-2.0 WITH LLVM-exception AND (NCSA OR MIT)	x86-64	7ed4651612a5c07aadfda38fdbd4e7e786877826790b5d74ce30edd638eb00b3	url:https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.6/libunwind-18.1.6.src.tar.xz
+zig compiler-rt	0.13.0 (statically linked)	MIT AND Apache-2.0 WITH LLVM-exception	x86-64	06c73596beeccb71cc073805bdb9c0e05764128f16478fa53bf17dfabc1d4318	url:https://ziglang.org/download/0.13.0/zig-0.13.0.tar.xz

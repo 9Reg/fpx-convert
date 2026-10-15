@@ -1,5 +1,5 @@
 fpx-convert 0.1.0
-commit          2a89b86c8a304a7cb000da208f11fd111428dd99
+commit          783d49d609e96b9096dc740e3f3a5d04500e3354
 
 Toolchain (each checked against its pin):
   rustc           rustc 1.98.1 (48a229cea 2026-09-01)
@@ -16,7 +16,7 @@ dynamic section (readelf -d); zig's final ld.lld command, replayed with -Map, ga
 byte-identical binary; the map's per-input byte counts are below. Inputs with 0 bytes
 were given to the linker but contributed nothing.
 
-x86-64 (x86_64-unknown-linux-musl): musl __libc_version 1.2.5, 34 entries
+x86-64 (x86_64-unknown-linux-musl): musl __libc_version 1.2.5, 35 entries
   Rust standard library line covers: alloc, core, panic_unwind, rustc-std-workspace-alloc, rustc-std-workspace-core, std, std_detect, unwind
   crate bitflags                                  0
   crate cfb                                   15024
@@ -68,7 +68,7 @@ x86-64 (x86_64-unknown-linux-musl): musl __libc_version 1.2.5, 34 entries
   zig musl crtn.o                                 4
   zig musl libc.a                             42712
 
-arm64 (aarch64-unknown-linux-musl): musl __libc_version 1.2.5, 34 entries
+arm64 (aarch64-unknown-linux-musl): musl __libc_version 1.2.5, 35 entries
   Rust standard library line covers: alloc, core, panic_unwind, rustc-std-workspace-alloc, rustc-std-workspace-core, std, std_detect, unwind
   crate bitflags                                  0
   crate cfb                                   14079
