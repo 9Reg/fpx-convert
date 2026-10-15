@@ -32,4 +32,6 @@ RUN rustup target add \
         x86_64-unknown-linux-musl \
         aarch64-unknown-linux-musl
 
-RUN cargo install cargo-zigbuild
+# Pinned: it rewrites the final link command, so a new version can change what gets linked
+# (spec 0002). Bump deliberately, then re-check the release licence record.
+RUN cargo install --locked cargo-zigbuild@0.23.4
