@@ -1,0 +1,121 @@
+fpx-convert 0.1.0
+commit          2a89b86c8a304a7cb000da208f11fd111428dd99
+
+Toolchain (each checked against its pin):
+  rustc           rustc 1.98.1 (48a229cea 2026-09-01)
+  cargo           cargo 1.98.1 (797e8a9bc 2026-08-05)
+  zig             0.13.0 (clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56))
+  cargo-zigbuild  0.23.4
+
+Binaries:
+  fpx-convert/x86-64/fpx-convert  x86_64-unknown-linux-musl  sha256 57574ac2910c9db46798991e7ee580805a26e217c53a24e28824ad6f42398d48
+  fpx-convert/arm64/fpx-convert  aarch64-unknown-linux-musl  sha256 22e61e721bfd63e8bcdf5cba782066d93ce2ca2e61d154881dd3b1ac034af47c
+
+Link evidence (spec 0002, "Proving what the final link used"): each binary has no
+dynamic section (readelf -d); zig's final ld.lld command, replayed with -Map, gave a
+byte-identical binary; the map's per-input byte counts are below. Inputs with 0 bytes
+were given to the linker but contributed nothing.
+
+x86-64 (x86_64-unknown-linux-musl): musl __libc_version 1.2.5, 34 entries
+  Rust standard library line covers: alloc, core, panic_unwind, rustc-std-workspace-alloc, rustc-std-workspace-core, std, std_detect, unwind
+  crate bitflags                                  0
+  crate cfb                                   15024
+  crate cfg-if                                    0
+  crate crc32fast                             18289
+  crate crossbeam-deque                           0
+  crate crossbeam-epoch                        6266
+  crate crossbeam-utils                         770
+  crate either                                    0
+  crate fdeflate                              27247
+  crate flate2                                 1510
+  crate fnv                                       0
+  crate fpx-convert                          171853
+  crate jpeg-decoder                         122037
+  crate jpeg-encoder                          14319
+  crate miniz_oxide                           24922
+  crate png                                   12078
+  crate rayon                                     0
+  crate rayon-core                            41684
+  crate simd-adler32                           2951
+  crate thiserror                                 0
+  crate uuid                                    508
+  crate web-time                                  0
+  fpx-convert objects                        348843
+  rust sysroot addr2line                       1155
+  rust sysroot adler2                          1044
+  rust sysroot alloc                           6199
+  rust sysroot cfg-if                             0
+  rust sysroot compiler_builtins                 72
+  rust sysroot core                           36964
+  rust sysroot gimli                           7690
+  rust sysroot hashbrown                        168
+  rust sysroot libc                               0
+  rust sysroot memchr                           942
+  rust sysroot miniz_oxide                    11665
+  rust sysroot object                           205
+  rust sysroot panic_unwind                     802
+  rust sysroot rustc-demangle                 27721
+  rust sysroot rustc-std-workspace-alloc          0
+  rust sysroot rustc-std-workspace-core           0
+  rust sysroot std                           262186
+  rust sysroot std_detect                      1792
+  rust sysroot unwind                             0
+  rustc symbols.o                                 0
+  zig libcompiler_rt.a                            0
+  zig libunwind.a                             23434
+  zig musl crt1.o                                57
+  zig musl crti.o                                 2
+  zig musl crtn.o                                 4
+  zig musl libc.a                             42712
+
+arm64 (aarch64-unknown-linux-musl): musl __libc_version 1.2.5, 34 entries
+  Rust standard library line covers: alloc, core, panic_unwind, rustc-std-workspace-alloc, rustc-std-workspace-core, std, std_detect, unwind
+  crate bitflags                                  0
+  crate cfb                                   14079
+  crate cfg-if                                    0
+  crate crc32fast                             18104
+  crate crossbeam-deque                           0
+  crate crossbeam-epoch                        6549
+  crate crossbeam-utils                         836
+  crate either                                    0
+  crate fdeflate                              22624
+  crate flate2                                 1557
+  crate fnv                                       0
+  crate fpx-convert                          150919
+  crate jpeg-decoder                         117074
+  crate jpeg-encoder                          13928
+  crate miniz_oxide                           21617
+  crate png                                   10643
+  crate rayon                                     0
+  crate rayon-core                            42273
+  crate simd-adler32                            936
+  crate thiserror                                 0
+  crate uuid                                    352
+  crate web-time                                  0
+  fpx-convert objects                        270771
+  rust sysroot addr2line                       1308
+  rust sysroot adler2                           680
+  rust sysroot alloc                           6806
+  rust sysroot cfg-if                             0
+  rust sysroot compiler_builtins               6189
+  rust sysroot core                           39168
+  rust sysroot gimli                           7905
+  rust sysroot hashbrown                        188
+  rust sysroot libc                               0
+  rust sysroot memchr                             0
+  rust sysroot miniz_oxide                    11045
+  rust sysroot object                           836
+  rust sysroot panic_unwind                     889
+  rust sysroot rustc-demangle                 28015
+  rust sysroot rustc-std-workspace-alloc          0
+  rust sysroot rustc-std-workspace-core           0
+  rust sysroot std                           240081
+  rust sysroot std_detect                      3630
+  rust sysroot unwind                             0
+  rustc symbols.o                                 0
+  zig libcompiler_rt.a                            0
+  zig libunwind.a                             22565
+  zig musl crt1.o                                72
+  zig musl crti.o                                16
+  zig musl crtn.o                                16
+  zig musl libc.a                             45346

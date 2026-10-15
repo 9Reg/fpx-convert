@@ -1,0 +1,34 @@
+fpx-convert	0.1.0 (statically linked)	AGPL-3.0-or-later	arm64	153e5ae7675f80c263dd5abe2601f2ef7f8f0868f11500781518dd75a904723e	fpx-convert-0.1.0-2a89b86c8a30.tar.gz
+adler2	2.0.1 (statically linked)	0BSD OR MIT OR Apache-2.0	arm64	320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa	crate:adler2 2.0.1
+bitflags	2.13.1 (statically linked)	MIT OR Apache-2.0	arm64	b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da	crate:bitflags 2.13.1
+cfb	0.14.0 (statically linked)	MIT	arm64	a347dcabdae9c31b0825fd6a8bed285ec9c2acb89c47827126d52fa4f59cece3	crate:cfb 0.14.0
+cfg-if	1.0.4 (statically linked)	MIT OR Apache-2.0	arm64	9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801	crate:cfg-if 1.0.4
+crc32fast	1.5.0 (statically linked)	MIT OR Apache-2.0	arm64	9481c1c90cbf2ac953f07c8d4a58aa3945c425b7185c9154d67a65e4230da511	crate:crc32fast 1.5.0
+crossbeam-deque	0.8.7 (statically linked)	MIT OR Apache-2.0	arm64	5181e0de7b61eb03a81e347d6dd8797bae9da5146707b51077e2d71a54ec0ceb	crate:crossbeam-deque 0.8.7
+crossbeam-epoch	0.9.20 (statically linked)	MIT OR Apache-2.0	arm64	2d6914041f254d6e9176c01941b21115dcfb7089e55135a35411081bd106ef3f	crate:crossbeam-epoch 0.9.20
+crossbeam-utils	0.8.22 (statically linked)	MIT OR Apache-2.0	arm64	61803da095bee82a81bb1a452ecc25d3b2f1416d1897eb86430c6159ef717c17	crate:crossbeam-utils 0.8.22
+either	1.16.0 (statically linked)	MIT OR Apache-2.0	arm64	91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e	crate:either 1.16.0
+fdeflate	0.3.7 (statically linked)	MIT OR Apache-2.0	arm64	1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c	crate:fdeflate 0.3.7
+flate2	1.1.9 (statically linked)	MIT OR Apache-2.0	arm64	843fba2746e448b37e26a819579957415c8cef339bf08564fe8b7ddbd959573c	crate:flate2 1.1.9
+fnv	1.0.7 (statically linked)	Apache-2.0 OR MIT	arm64	3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1	crate:fnv 1.0.7
+jpeg-decoder	0.3.2 (statically linked)	MIT OR Apache-2.0	arm64	00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07	crate:jpeg-decoder 0.3.2
+jpeg-encoder	0.7.0 (statically linked)	(MIT OR Apache-2.0) AND IJG	arm64	0b0b36cbb4e6704f12f5b5d7b01dac593982c6550859ebd5a66fb15c9ea27fd5	crate:jpeg-encoder 0.7.0
+miniz_oxide	0.8.9 (statically linked)	MIT OR Zlib OR Apache-2.0	arm64	1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316	crate:miniz_oxide 0.8.9
+png	0.18.1 (statically linked)	MIT OR Apache-2.0	arm64	60769b8b31b2a9f263dae2776c37b1b28ae246943cf719eb6946a1db05128a61	crate:png 0.18.1
+rayon	1.12.0 (statically linked)	MIT OR Apache-2.0	arm64	fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d	crate:rayon 1.12.0
+rayon-core	1.13.0 (statically linked)	MIT OR Apache-2.0	arm64	22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91	crate:rayon-core 1.13.0
+simd-adler32	0.3.10 (statically linked)	MIT	arm64	3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea	crate:simd-adler32 0.3.10
+thiserror	2.0.19 (statically linked)	MIT OR Apache-2.0	arm64	09a43598840e33d5b0331f38c5e30d13bb11c11210a4b58f0d9b18a5a5eefcd9	crate:thiserror 2.0.19
+uuid	1.24.0 (statically linked)	Apache-2.0 OR MIT	arm64	bf3923a6f5c4c6382e0b653c4117f48d631ea17f38ed86e2a828e6f7412f5239	crate:uuid 1.24.0
+web-time	1.1.0 (statically linked)	MIT OR Apache-2.0	arm64	5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb	crate:web-time 1.1.0
+Rust standard library	1.98.1 (statically linked)	MIT OR Apache-2.0	arm64	be1816e7f6c40abb90245ad6e024bed2a7e88d7dda4561e4d5470207df616b9f	url:https://static.rust-lang.org/dist/rustc-1.98.1-src.tar.xz
+addr2line	0.25.1 (statically linked)	Apache-2.0 OR MIT	arm64	1b5d307320b3181d6d7954e663bd7c774a838b8220fe0593c86d9fb09f498b4b	crate:addr2line 0.25.1
+compiler_builtins	0.1.160 (statically linked)	MIT AND Apache-2.0 WITH LLVM-exception AND (MIT OR Apache-2.0)	arm64	be1816e7f6c40abb90245ad6e024bed2a7e88d7dda4561e4d5470207df616b9f	url:https://static.rust-lang.org/dist/rustc-1.98.1-src.tar.xz
+gimli	0.32.3 (statically linked)	MIT OR Apache-2.0	arm64	e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7	crate:gimli 0.32.3
+hashbrown	0.17.1 (statically linked)	MIT OR Apache-2.0	arm64	ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a	crate:hashbrown 0.17.1
+libc	0.2.185 (statically linked)	MIT OR Apache-2.0	arm64	52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f	crate:libc 0.2.185
+memchr	2.7.6 (statically linked)	Unlicense OR MIT	arm64	f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273	crate:memchr 2.7.6
+object	0.37.3 (statically linked)	Apache-2.0 OR MIT	arm64	ff76201f031d8863c38aa7f905eca4f53abbfa15f609db4277d44cd8938f33fe	crate:object 0.37.3
+rustc-demangle	0.1.27 (statically linked)	MIT OR Apache-2.0	arm64	b50b8869d9fc858ce7266cce0194bd74df58b9d0e3f6df3a9fc8eb470d95c09d	crate:rustc-demangle 0.1.27
+musl	1.2.5 (statically linked)	MIT	arm64	a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4	url:https://musl.libc.org/releases/musl-1.2.5.tar.gz
+libunwind	18.1.6 (statically linked)	Apache-2.0 WITH LLVM-exception AND (NCSA OR MIT)	arm64	7ed4651612a5c07aadfda38fdbd4e7e786877826790b5d74ce30edd638eb00b3	url:https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.6/libunwind-18.1.6.src.tar.xz
